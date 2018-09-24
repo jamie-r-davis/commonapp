@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -30,6 +31,27 @@ class CommonApp:
         else:
             raise Exception('Failed to log into CommonApp.')
 
+    def list_files(self):
+        """
+        Retrieve a list of files available via the Control Center.
+        """
+        url = self.BASE_URL + '/Export/RetrieveFiles'
+        response = self.session.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        for tr in soup.select('#retFiles tbody tr'):
+            attrs = {}
+            keys = ['fileName',
+                    'exportTemplateName',
+                    'runTime',
+                    'processType',
+                    'userHeader',
+                    'recordsHeader']
+            for k in keys:
+                v = tr.select_one(f'td[headers={k}]').text.strip()
+                attrs[k] = v
+            yield attrs
+
+
     def retrieve_file(self, filename, local_path=None):
         """
         Retrive a file from the Control Center.
@@ -48,6 +70,8 @@ class CommonApp:
             schedule_type = 'Adhoc'
         else:
             schedule_type = 'SDS'
+        if filename.lower().endswith('.zip'):
+            export_type = ''
         uri = '/Export/DownloadFile?fileName={}&type=Export&scheduleType={}'
         url = self.BASE_URL + uri.format(filename, schedule_type)
         self.login()
