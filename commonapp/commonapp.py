@@ -78,6 +78,8 @@ class CommonApp:
         response = self.session.get(url)
         if response.status_code != 200:
             raise Exception(f'{r.status_code} received.', response.text)
+        if len(response.content) == 0:
+            raise Exception(f'File contains no data: {filename}')
         if local_path:
             with open(local_path, 'wb') as f:
                 f.write(response.content)
