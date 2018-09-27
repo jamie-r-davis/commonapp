@@ -5,7 +5,7 @@ with open('README.md') as fh:
 
 setuptools.setup(
     name='commonapp',
-    version='0.0.1',
+    version='0.0.2',
     author='Jamie Davis',
     author_email='jamjam@umich.edu',
     description='Interface for CommonApp Control Center',
