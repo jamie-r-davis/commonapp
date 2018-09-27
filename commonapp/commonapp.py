@@ -75,14 +75,15 @@ class CommonApp:
         uri = '/Export/DownloadFile?fileName={}&type=Export&scheduleType={}'
         url = self.BASE_URL + uri.format(filename, schedule_type)
         self.login()
-        response = self.session.get(url)
-        if response.status_code != 200:
-            raise Exception(f'{r.status_code} received.', response.text)
-        if len(response.content) == 0:
+        stream = self.session.get(url, stream=True)
+        if stream.status_code != 200:
+            raise Exception(f'{stream.status_code} received.', stream.text)
+        if len(stream.content) == 0:
             raise Exception(f'File contains no data: {filename}')
         if local_path:
             with open(local_path, 'wb') as f:
-                f.write(response.content)
+                for chunk in stream.iter_content(chunk_size=1024):
+                    f.write(chunk)
             return local_path
         else:
             return response.content
